@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Dropping Bullets</title>
+        <link rel="stylesheet" type="text/css" href="stylesheet.css">
+	</head>
+	<body>
+    <div id="game">
+        <h1><a href="index.html">Ghost Dropper</a></h1>
+    </div>
+
+	<form id="Game Controls">
+		<legend id="health">Health: </legend>
+		<legend id="score">Score: </legend>
+		<input type="button" value="Start game" onclick="my_game.start_game()">
+		<input type="button" value="Stop game" onclick="my_game.stop_game()">
+        <input type="button" value="Restart game" onclick="restart()">
+        <script>
+            function restart() {
+                window.location.reload(true);
+            }
+        </script>
+	</form>
+        <br>
+        <br>
+	<canvas id="game_canvas" width="700" height="300" style="border:1px dotted" ></canvas>
+
+
+<script>
+
+/* Edel Sherratt's minimal game outline */
+
+/* my_game is a namespace that makes start_game() 
+   and stop_game() public while hiding other variables
+*/
+    
+my_game = function () {
+
+	/* a canvas and a canvas context to let us draw stuff */
+	var mycanv=document.getElementById("game_canvas");
+	var ctx=mycanv.getContext("2d");
+    
+    /*Code written by Emily Elias */ 
+    var background = new Image();
+    background.src = "starsglow1.gif";
+    
+    background.onload = function() {
+        context.drawImage(background,0,0);
+    }
+
+	/* references to DOM elments used to display game stats */
+	var health_display = document.getElementById("health");
+	var score_display = document.getElementById("score");
+	
+	/* the canvas bounding box used with the mouse event listener */
+	var canv_bounding_box = mycanv.getBoundingClientRect(); 
+
+	/* event listener calls move when the canvas is clicked */
+	mycanv.addEventListener("mousemove", move ,false);
+    
+	var me = {
+		my_x: mycanv.width/2,
+		my_y: mycanv.height-30,
+		my_width: 30,
+		my_height: 20,
+		my_health: 20,
+		my_score: 0,
+
+		draw: function (context) {
+            /*Code written by Emily Elias */ 
+            
+            var save = context.fillStyle;
+            
+            var playerImage = document.createElement('img');
+            playerImage.src = 'person.png';
+            
+            context.drawImage(playerImage, this.my_x,this.my_y, this.my_width, this.my_height);
+            
+			health_display.innerHTML = "Health: " + this.my_health; 
+			score_display.innerHTML = "Score: " + this.my_score; 
+            /*
+    			context.fillRect(
+				this.my_x,this.my_y,
+				this.my_width,this.my_height
+			)
+            */
+            context.fillStyle = save;
+                       
+		},
+
+		reset: function () {
+			this.my_x = 0;
+			this.my_y = mycanv.height-30;
+			this.my_width = 30;
+			this.my_height = 20;
+			this.my_health = 15
+		}
+	}
+
+	/* move calculates a new x position for the player */
+	function move( e ) {
+		me.my_x = (e.clientX-canv_bounding_box.left) *
+		(mycanv.width/canv_bounding_box.width);	
+		did_i_score();
+	}
+    
+	function was_i_hit( some_bullet ) {
+        var index;
+        
+        /*Code written by Emily Elias */ 
+        //test to see if bullet has collided with me
+		if (me.my_x < (some_bullet.x +  some_bullet.width) 
+            && 
+            (me.my_x + me.my_width ) > some_bullet.x 
+            && 
+            me.my_y < (some_bullet.y + some_bullet.height ) 
+            && 
+            (me.my_y + me.my_height) > some_bullet.y) 
+        {
+            //reduce health if i was hit
+            me.my_health = me.my_health - 1;
+            
+            //Delete bullet
+			index = the_bullets.bullets.indexOf(some_bullet);
+			if (index > -1) {
+                //remove from the bullets array
+                the_bullets.bullets.splice(index, 1);
+            }
+            
+            //Credit to soundbible.com http://soundbible.com/1059-Mummy-Zombie.html
+            collisionSound.play();
+            
+		}
+        
+        /*Code written by Emily Elias */ 
+        //If health is zero then stop the game
+        if(me.my_health <= 0) 
+        { 
+            //credit to freesound.org http://www.freesound.org/people/noirenex/sounds/15939/
+            endofGame.play();
+            
+           // alert("End of game!");
+            stop_game();
+            
+            window.location = 'gameOver.html';
+           
+        }
+		
+	}
+
+	function did_i_score() {
+        
+        /*Code written by Emily Elias */
+        
+       //test to see if reached the right side of canvas
+		if (me.my_x > (mycanv.width - 27))
+        {
+             
+            //increase score
+            me.my_score = me.my_score + 1;
+            
+            //Credit to soundbible.com http://soundbible.com/2084-Glass-Ping.html
+            scoreSound.play();
+            
+            //set me back to the left side of the canvas
+            me.reset();
+		}
+        
+        localStorage.setItem('score', me.my_score);
+        
+        if(me.my_score === 10) {
+            the_bullets.bullets[i].y += 50;
+        }
+	}
+
+	/* prototype for creating new bullets */
+	function Bullet( x, y, dy, mass ) {
+		this.x = x;
+		this.y = y;
+		this.dy = dy;
+		this.mass = mass;
+
+		this.height = 10 *this.mass;
+		this.width = 10 *this.mass;
+		this.top =this.y;
+		this.bottom = this.y + this.height;
+		this.left = this.x;
+		this.right = this.x + this.width;
+
+		this.update_position = function () {
+            
+            /*Code written by Emily Elias */ 
+			this.y = this.dy + this.y;
+			this.top = this.y;
+			this.bottom = this.y;
+            
+		},
+
+    		this.draw = function ( context ) {
+            var bullet = document.createElement('img');
+            bullet.src = 'ghost.png';
+            
+            context.drawImage(bullet, this.x,this.y, this.width, this.height);
+            /*
+			context.fillRect(
+				this.x, this.y,
+				this.width, this.height );
+                */
+		}
+
+	}
+
+	var the_bullets = {
+
+		/* an empty array to store bullets */
+		bullets: [],
+
+		/* create a bullet and add it to the array of bullets */
+		add_random_falling_bullet: function () {
+			
+            var min= 1;
+            var max = 700;
+            var masMass = 10;
+            var minMass = 1;
+            
+            /*Code written by Emily Elias */ 
+			var x = (Math.random() * (max - min) + min);
+            
+			var y = 1;
+			var dy = 100
+			var mass = 3;
+
+            //puts it into bullets array
+        	this.bullets.push( new Bullet( x, y, dy, mass) )
+		},
+
+		maybe_add_random_bullet: function ( how_likely ) {
+	
+			var maybe = Math.random();
+			if ( maybe < how_likely) {
+				this.add_random_falling_bullet()
+			}
+	
+		},
+
+		reset: function () {
+			this.bullets = []
+		}
+
+	}
+
+        var game_interval;
+        var collisionSound;
+        var scoreSound;
+    
+	function start_game() {
+		me.reset();
+        
+        /*Code written by Emily Elias */
+        //Sounds for collision and score and game over
+        collisionSound = new sound("collisionGhost.mp3");
+        scoreSound = new sound("ping.mp3");
+        endofGame = new sound("endOfGame.wav");
+        
+		game_interval = setInterval(game_loop, 50);
+	}
+    
+    /*Credit to W3Schools http://www.w3schools.com/games/tryit.asp?filename=trygame_sound */
+    function sound(src) {
+        this.sound = document.createElement("audio");
+        this.sound.src = src;
+        this.sound.setAttribute("preload", "auto");
+        this.sound.setAttribute("controls", "none");
+        this.sound.style.display = "none";
+        document.body.appendChild(this.sound);
+        this.play = function(){
+        this.sound.play();
+    }
+        this.stop = function(){
+        this.sound.pause();
+    }    
+    }
+
+	function draw_everything() {
+        	/* first thing to do each frame is clear the canvas */
+        	mycanv.width=mycanv.width; 
+
+		    /* and draw the player */
+		    me.draw(ctx);
+
+            /* and draw all the bullets */
+        	for (i=0; i<the_bullets.bullets.length; i++) {
+			the_bullets.bullets[i].draw(ctx);
+		}
+	}
+    
+    /*Keyboard controls re-used from FTW, added in speed for controls */
+
+    //Keyboard control to move me left
+    function move_left() {
+        me.my_x -= 15;
+    }
+
+    //Keyboard control to move me right
+    function move_right() {
+        me.my_x += 15;
+    }
+    
+    
+    document.onkeydown= function(event) {
+  
+        var keyCode; 
+    
+        if(event == null)
+        {
+            keyCode = window.event.keyCode; 
+        }
+        else 
+        {
+            keyCode = event.keyCode; 
+        }
+        console.log(keyCode);
+    
+        switch(keyCode)
+        {
+            // left 
+            case 37:
+                //action when pressing left key
+                move_left();
+                break; 
+
+            // right 
+            case 39:
+                // action when pressing right key
+                move_right();
+                break; 
+
+            default: 
+                break; 
+        } 
+    }
+    
+    
+
+	function game_loop() {
+        
+
+		/* randomly add some new falling bullets */
+		the_bullets.maybe_add_random_bullet( 0.2 );
+
+		
+        	for (var i=0; i<the_bullets.bullets.length; i++) {
+                
+        /*Code written by Emily Elias */ 
+                
+            //updating position of each bullet
+            // +5 to make them speed up
+            the_bullets.bullets[i].y += 5;
+                
+            //see if i was hit by the current bullet
+            was_i_hit(the_bullets.bullets[i]);
+            
+            //remove the current bullet if it has gone off the canvas (y value was too large)
+
+		} 
+
+		draw_everything();
+	}
+
+	/* stop updating and re-drawing the screen */
+	function stop_game() {
+		clearInterval(game_interval);
+	}
+
+	return {
+		start_game: start_game,
+		stop_game: stop_game
+	}
+}()
+
+
+</script>
+</body>
+</html>

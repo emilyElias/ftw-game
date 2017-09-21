@@ -1,0 +1,56 @@
+canvas {
+    border: #333 1px solid;
+    cursor:none;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+body {
+    padding:10px;
+    text-align: center;
+    background-image: url("starsglow1.gif");
+}
+
+
+h1{
+    color: white;
+    font-size: 90px;
+    text-align: center;
+}
+
+h2, h3 {
+    color:white;
+    font-size: 20px;
+}
+
+li{
+    color:white;
+    font-size: 15px;
+    list-style-type: none;
+}
+
+#game h1{
+    font-size: 50px;
+}
+
+input {
+    width: 200px;
+    height: 50px;
+    background-color: aliceblue;
+    font-size: 20px;
+}
+
+canvas {
+    background-color: aliceblue;
+    
+}
+
+legend {
+    color:white;
+    font-size: 25px;
+}
+
+p{
+    color: white;
+    font-size: 15px;
+}
